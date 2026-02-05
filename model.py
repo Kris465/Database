@@ -8,10 +8,28 @@ class Database:
 
     def connect(self):
         self.connection = sqlite3.connect(self.db_name)
+        # Create table if it doesn't exist
+        cursor = self.connection.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS numbers (
+                            id INTEGER PRIMARY KEY AUTOINCREMENT,
+                            value INTEGER NOT NULL
+                          )''')
+        self.connection.commit()
         return self.connection
 
     def read_from_db(self):
-        pass
+        if not self.connection:
+            self.connect()
+
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT value FROM numbers ORDER BY id DESC LIMIT 1")
+        result = cursor.fetchone()
+        return result[0]
 
     def write_to_db(self, number):
-        pass
+        if not self.connection:
+            self.connect()
+
+        cursor = self.connection.cursor()
+        cursor.execute("INSERT INTO numbers (value) VALUES (?)", (number,))
+        self.connection.commit()
